@@ -1,0 +1,5 @@
+User: "bankUser"
+Passwd: "12345678"
+DBName: "BankServer"
+Net: "db"             # "db" ------> run in docker      "" -----> run in local
+Addr: "127.0.0.1"

@@ -1,0 +1,41 @@
+version: "3.7"
+services:
+  cassandra:
+    image: cassandra:latest
+    container_name: cassandra
+#    ports:
+#      - "9042:9042"
+    environment:
+      - "MAX_HEAP_SIZE=256M"
+      - "HEAP_NEWSIZE=128M"
+    restart: always
+    volumes:
+      - ./out/cassandra_data:/var/lib/cassandra
+  cassandra-load-keyspace:
+    container_name: cassandra-load-keyspace
+    image: cassandra:latest
+    depends_on:
+      - cassandra
+    volumes:
+      - ./cassandra_schema.cql:/schema.cql
+    command: /bin/bash -c "sleep 60 && echo loading cassandra keyspace && cqlsh cassandra -f /schema.cql"
+#  app:
+#    build: .
+#    container_name: app
+#    ports:
+#    - 8080:8080
+#    depends_on:
+#      - db
+#    environment:
+#      profile: prod
+#      db_pass: 12345678
+#  db:
+#    image: mysql:latest
+#    container_name: db
+#    environment:
+#      MYSQL_DATABASE: BankServer
+#      MYSQL_USER: bankUser
+#      MYSQL_PASSWORD: 12345678
+#      MYSQL_ROOT_PASSWORD: "dlink"
+#    volumes:
+#      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql

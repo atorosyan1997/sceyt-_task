@@ -1,0 +1,8 @@
+version: "3.7"
+services:
+  cassandra-load-keyspace:
+    container_name: cassandra-load-keyspace
+    image: cassandra:latest
+    volumes:
+      - ./src/main/resources/cassandra_schema.cql:/schema.cql
+    command: /bin/bash -c "sleep 60 && echo loading cassandra keyspace && cqlsh cassandra -f /schema.cql"
