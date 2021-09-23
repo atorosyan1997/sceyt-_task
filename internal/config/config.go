@@ -1,24 +1,21 @@
 package config
 
 import (
-	"fmt"
-	"github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/tkanos/gonfig"
-	"my-bank-service/pkg/logging"
+	"sceyt_task/pkg/logging"
 	"sync"
 )
 
 const (
-	AccessTokenLife = 30
-)
+	ServerAddr = ""
+	ServerPort = "8080"
 
-const (
-	ServerAddr  = ""
-	ServerPort  = "8080"
-	Driver      = "mysql"
-	DatabaseUrl = "%s:%s@tcp(%s)/%s?parseTime=true"
+	RedisHost    = "redis_db"
+	RedisPort    = "6379"
+	RedisDb      = 0
+	RedisExpires = 300
 
 	LogConfigFileName = "logConfig"
 	ServerConfigPath  = "./properties"
@@ -26,80 +23,22 @@ const (
 )
 
 const (
-	GroupPath        = "/"
-	SignUpPath       = "signup"
-	LoginPath        = "login/"
-	LogoutPath       = "logout/"
-	PaymentPath      = "payment/"
-	RefreshTokenPath = "/refresh-token/"
+	GroupPath   = "/"
+	DeletePath  = "delete/"
+	AddPath     = "add/"
+	UpdatePath  = "update/"
+	SearchPath  = "search"
+	SwaggerPath = "/swagger/*any"
 )
 
-const (
-	UsersTable          = "users"
-	AuthTable           = "auth"
-	BalanceTable        = "balance"
-	PaymentHistoryTable = "payment_history"
-
-	Id        = "id"
-	Email     = "email"
-	UserName  = "userName"
-	FirstName = "firstName"
-	LastName  = "lastName"
-	Password  = "password"
-	TokenHash = "tokenhash"
-	CreatedAt = "createdat"
-	UpdatedAt = "updatedat"
-
-	UserId       = "user_id"
-	AuthUUID     = "auth_uuid"
-	IntegerPart  = "integer_part"
-	FractionPart = "fraction_part"
-	Currency     = "currency"
-
-	BalanceId         = "balance_id"
-	InitialBalance    = "initial_balance"
-	FinalBalance      = "final_balance"
-	DifferenceBalance = "difference_balance"
-)
-
-const (
-	DefSum      float64 = 1.1
-	DefCurrency string  = "USD"
-)
-
-// Configurations wraps all the configs variables required by the auth service
-type Configurations struct {
-	AccessTokenPrivateKeyPath  string
-	AccessTokenPublicKeyPath   string
-	RefreshTokenPrivateKeyPath string
-	RefreshTokenPublicKeyPath  string
-	JwtExpiration              int // in minutes
-	SendGridApiKey             string
-}
-
-// NewConfigurations returns a new Configuration object
-func NewConfigurations(logger logging.Logger) *Configurations {
-
-	viper.AutomaticEnv()
-
-	logger.Debug("found database url in env, connection string is formed by parsing it")
-
-	viper.SetDefault("ACCESS_TOKEN_PRIVATE_KEY_PATH", "./internal/access-private.pem") //"./web-service/d-link_snmp/snmpAPI/pkg/jwt/access-private.pem")
-	viper.SetDefault("ACCESS_TOKEN_PUBLIC_KEY_PATH", "./internal/access-public.pem")
-	viper.SetDefault("REFRESH_TOKEN_PRIVATE_KEY_PATH", "./internal/refresh-private.pem")
-	viper.SetDefault("REFRESH_TOKEN_PUBLIC_KEY_PATH", "./internal/refresh-public.pem")
-	viper.SetDefault("JWT_EXPIRATION", AccessTokenLife)
-
-	configs := &Configurations{
-		JwtExpiration:              viper.GetInt("JWT_EXPIRATION"),
-		AccessTokenPrivateKeyPath:  viper.GetString("ACCESS_TOKEN_PRIVATE_KEY_PATH"),
-		AccessTokenPublicKeyPath:   viper.GetString("ACCESS_TOKEN_PUBLIC_KEY_PATH"),
-		RefreshTokenPrivateKeyPath: viper.GetString("REFRESH_TOKEN_PRIVATE_KEY_PATH"),
-		RefreshTokenPublicKeyPath:  viper.GetString("REFRESH_TOKEN_PUBLIC_KEY_PATH"),
-		SendGridApiKey:             viper.GetString("SENDGRID_API_KEY"),
-	}
-
-	return configs
+// Configuration wraps all the configs variables required by the auth service
+type Configuration struct {
+	Username     string
+	Password     string
+	Address      string
+	ProtoVersion int
+	Keyspace     string
+	CQLVersion   string
 }
 
 var instance *logging.Configuration
@@ -122,19 +61,19 @@ func GetLogConfiguration() *logging.Configuration {
 	return instance
 }
 
-var connection string
+var dbConfig *Configuration
 var dbOnce sync.Once
 
 // LoadConfig get sql connection parameters
-func LoadConfig(l logging.Logger) string {
+func LoadConfig() *Configuration {
 	dbOnce.Do(func() {
-		config := mysql.Config{}
-		err := gonfig.GetConf(DbConfigPath, &config)
+		config := &Configuration{}
+		err := gonfig.GetConf(DbConfigPath, config)
 		if err != nil {
-			l.Logger.Error("An error was generated while reading the database config file.")
+			logrus.Error("An error was generated while reading the database config file.")
 			return
 		}
-		connection = fmt.Sprintf(DatabaseUrl, config.User, config.Passwd, config.Net, config.DBName)
+		dbConfig = config
 	})
-	return connection
+	return dbConfig
 }

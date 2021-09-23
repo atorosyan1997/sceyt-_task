@@ -7,15 +7,14 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
-	"my-bank-service/internal/config"
-	"my-bank-service/internal/data"
-	"my-bank-service/internal/handler"
-	"my-bank-service/internal/reposytory"
-	"my-bank-service/internal/service"
-	data2 "my-bank-service/internal/validation"
-	"my-bank-service/pkg/logging"
-	"my-bank-service/pkg/session"
-	//_ "my-bank-service/docs"
+	_ "sceyt_task/docs"
+	"sceyt_task/internal/cache"
+	"sceyt_task/internal/config"
+	"sceyt_task/internal/handler"
+	"sceyt_task/internal/repository"
+	"sceyt_task/internal/validation"
+	"sceyt_task/pkg/logging"
+	"sceyt_task/pkg/session"
 )
 
 var sf *session.SessionFactory
@@ -27,7 +26,7 @@ func Run(address string, port string) {
 	options.FontColor = []figlet4go.Color{
 		figlet4go.ColorGreen,
 	}
-	renderStr, _ := ascii.RenderOpts("API-Server!", options)
+	renderStr, _ := ascii.RenderOpts("User-Server!", options)
 	fmt.Print(renderStr)
 
 	logConfig := config.GetLogConfiguration()
@@ -41,42 +40,20 @@ func Run(address string, port string) {
 
 	sessionRef := sf.GetSession()
 
-	con := config.NewConfigurations(logger)
-
 	// userRepository contains all the methods that interact with DB to perform CURD operations for user.
-	userRepository := reposytory.NewUserRepository(sessionRef, logger)
-	/*user :=&data.User{
-		ID: "asdasdaa",
-		Email:"asdasdas",
-		Username: "username",
-		FirstName: "Arman",
-		LastName: "Torosyan",
-		Password: "12345678",
-		TokenHash: "asdasd",
-	}
-	userRepository.Create(user)*/
+	userRepository := repository.NewUserRepository(sessionRef, logger)
 
-	/*user ,_:= userRepository.GetUserByUserName("admin")
-	fmt.Println(user)*/
-
-	authRepository := reposytory.NewAuthRepository(sessionRef, logger)
-
-	authRepository.FetchAuth(&data.AuthDetails{
-		UserId:   "asdadas",
-		AuthUuid: "uwehrskadsaj",
-	})
+	// userCache contains all the methods that interact with redis cache
+	userCache := cache.NewRedisCache(fmt.Sprintf("%s:%s", config.RedisHost, config.RedisPort), config.RedisDb, config.RedisExpires)
 
 	// validation contains all the methods that are need to validate the user json in request
-	validator := data2.NewValidation()
-
-	// authService contains all methods that help in authorizing a user request
-	authService := service.NewAuthService(logger, con, authRepository)
+	validator := validation.NewValidation()
 
 	// AuthHandler encapsulates all the services related to user
-	authHandler := handlers.NewAuthHandler(logger, con, validator, userRepository, authService)
+	authHandler := handler.NewUserHandler(logger, validator, userRepository, userCache)
 
 	authHandler.Routes(router)
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.GET(config.SwaggerPath, ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	err := router.Run(fmt.Sprintf("%s:%v", address, port))
 	if err != nil {
@@ -87,7 +64,7 @@ func Run(address string, port string) {
 
 func init() {
 	var err error
-	sf, err = session.NewSessionFactory(config.Driver)
+	sf, err = session.NewSessionFactory()
 	if err != nil {
 		log.Panic(err)
 	}

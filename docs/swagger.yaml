@@ -1,0 +1,170 @@
+basePath: /
+definitions:
+  swagger.UserAddUpdate:
+    properties:
+      firstname:
+        type: string
+      lastname:
+        type: string
+      username:
+        type: string
+    required:
+    - firstname
+    - lastname
+    - username
+    type: object
+  swagger.UserSearchDelete:
+    properties:
+      username:
+        type: string
+    required:
+    - username
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API Server for test task.
+  title: API-Server
+  version: "1.0"
+paths:
+  /add/:
+    post:
+      consumes:
+      - application/json
+      description: add user
+      operationId: user-add
+      parameters:
+      - description: add user
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.UserAddUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            type: integer
+        "404":
+          description: Not Found
+          schema:
+            type: integer
+        "500":
+          description: Internal Server Error
+          schema:
+            type: integer
+      summary: add
+      tags:
+      - user
+  /delete/:
+    delete:
+      consumes:
+      - application/json
+      description: delete user
+      operationId: user-delete
+      parameters:
+      - description: delete user
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.UserSearchDelete'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            type: integer
+        "404":
+          description: Not Found
+          schema:
+            type: integer
+        "500":
+          description: Internal Server Error
+          schema:
+            type: integer
+      summary: delete
+      tags:
+      - user
+  /search/:
+    post:
+      consumes:
+      - application/json
+      description: user search
+      operationId: user-search
+      parameters:
+      - description: user search
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.UserSearchDelete'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            type: integer
+        "404":
+          description: Not Found
+          schema:
+            type: integer
+        "500":
+          description: Internal Server Error
+          schema:
+            type: integer
+      summary: Search
+      tags:
+      - user
+  /update/:
+    post:
+      consumes:
+      - application/json
+      description: update user
+      operationId: user-update
+      parameters:
+      - description: update user
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/swagger.UserAddUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            type: integer
+        "404":
+          description: Not Found
+          schema:
+            type: integer
+        "500":
+          description: Internal Server Error
+          schema:
+            type: integer
+      summary: update
+      tags:
+      - user
+swagger: "2.0"

@@ -11,13 +11,13 @@ import (
 )
 
 const (
-	ServiceHider    = "API-SERVICE"
+	ServiceHider    = "USER-SERVER"
 	LogDir          = "logs"
 	DirPermission   = 0777
-	FileName        = "api_server"
+	FileName        = "user_server"
 	TimeFieldKey    = "@timestamp"
 	MessageFieldKey = "message"
-	FileFieldKey    = "service"
+	FileFieldKey    = "server"
 )
 
 type Configuration struct {
@@ -54,7 +54,7 @@ func Init(conf *Configuration) {
 	l.Formatter = &logrus.TextFormatter{
 		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
 			filename := path.Base(f.File)
-			return fmt.Sprintf("%s:%d", filename, f.Line), " [API SERVICE]"
+			return fmt.Sprintf("%s:%d", filename, f.Line), " [USER SERVER]"
 		},
 		TimestampFormat:        conf.TimestampFormat,
 		DisableLevelTruncation: conf.DisableLevelTruncation,

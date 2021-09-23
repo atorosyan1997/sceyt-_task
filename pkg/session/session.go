@@ -1,8 +1,9 @@
 package session
 
 import (
-	"fmt"
 	"github.com/gocql/gocql"
+	"log"
+	"sceyt_task/internal/config"
 )
 
 type SessionFactory struct {
@@ -10,32 +11,29 @@ type SessionFactory struct {
 }
 
 // NewSessionFactory creates a session factory
-func NewSessionFactory(driverName string) (*SessionFactory, error) {
-	/*logger := logging.GetLogger()
-	dataSource := config.LoadConfig(logger)
-	db, err := sql.Open(driverName, dataSource)
+func NewSessionFactory() (*SessionFactory, error) {
+	dbConfig := config.LoadConfig()
+	cluster := gocql.NewCluster(dbConfig.Address)
+	cluster.ProtoVersion = dbConfig.ProtoVersion
+	cluster.Keyspace = dbConfig.Keyspace
+	cluster.CQLVersion = dbConfig.CQLVersion
+	cluster.Consistency = gocql.Quorum
+	cluster.Authenticator = gocql.PasswordAuthenticator{
+		Username: dbConfig.Username,
+		Password: dbConfig.Password,
+	}
+	var err error
+	session, err := cluster.CreateSession()
 	if err != nil {
-		return nil, err
-	}*/
-	factory := new(SessionFactory)
+		log.Panic(err)
+	}
+	factory := &SessionFactory{
+		session: session,
+	}
 	return factory, nil
 }
 
 // GetSession get a session
 func (sf *SessionFactory) GetSession() *gocql.Session {
-	if sf.session == nil {
-
-		cluster := gocql.NewCluster("127.0.0.1")
-		cluster.ProtoVersion = 4
-		cluster.Keyspace = "taskdb"
-		cluster.CQLVersion = "3.4.4"
-		cluster.Consistency = gocql.Quorum
-		var err error
-		sf.session, err = cluster.CreateSession()
-		if err != nil {
-			fmt.Println(err)
-			return nil
-		}
-	}
 	return sf.session
 }

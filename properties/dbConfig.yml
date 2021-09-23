@@ -1,5 +1,6 @@
-User: "bankUser"
-Passwd: "12345678"
-DBName: "BankServer"
-Net: "db"             # "db" ------> run in docker      "" -----> run in local
-Addr: "127.0.0.1"
+Username: "cassandra"
+Password: "cassandra"
+Address: "cassandra:9042"
+ProtoVersion: 4
+Keyspace: "taskdb"
+CQLVersion: "3.4.4"
